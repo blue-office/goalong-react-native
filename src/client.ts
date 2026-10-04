@@ -10,9 +10,9 @@ import type {
   ReferralSnapshot,
 } from "./models";
 import { GoAlongError } from "./models";
-import { KEYS, defaultStorage, uuidv4, type GoAlongStorage } from "./storage";
+import { KEYS, memoryStorage, uuidv4, type GoAlongStorage } from "./storage";
 
-export const SDK_VERSION = "react-native-0.1.0";
+export const SDK_VERSION = "react-native-0.2.0";
 
 export interface DeviceMeta {
   osVersion?: string;
@@ -27,8 +27,11 @@ export interface GoAlongConfig {
   appSlug?: string;
   /** 既定 https://goalong.me */
   baseUrl?: string;
-  /** 端末の保存先。既定は AsyncStorage */
-  storage?: GoAlongStorage;
+  /**
+   * 端末の保存先(getItem / setItem / removeItem)。AsyncStorage はそのまま渡せる:
+   * `import AsyncStorage from "@react-native-async-storage/async-storage"` → `storage: AsyncStorage`
+   */
+  storage: GoAlongStorage;
   /**
    * いま有効な購読があるか(RevenueCat の CustomerInfo などで判定)。
    * true を返すと紹介コードを送信せず existingSubscriber を返す(有効な購読があるユーザーは紹介の対象外)
@@ -61,6 +64,11 @@ function serial<T>(fn: () => Promise<T>): Promise<T> {
   const run = queue.then(fn, fn);
   queue = run.catch(() => undefined);
   return run;
+}
+
+function fallbackStorage(): GoAlongStorage {
+  console.warn("[GoAlong] configure に storage が渡されていないため、メモリに保存します(アプリを終了するとインストール ID が変わります)。");
+  return memoryStorage();
 }
 
 function defaultDeviceMeta(): DeviceMeta {
@@ -175,7 +183,7 @@ export const GoAlong = {
       appSlug: config.appSlug,
       baseUrl,
       host,
-      storage: config.storage ?? defaultStorage(),
+      storage: config.storage ?? fallbackStorage(),
       isActiveSubscriber: config.isActiveSubscriber,
       deviceMeta: config.deviceMeta ?? defaultDeviceMeta,
       fetch: config.fetch ?? fetch,

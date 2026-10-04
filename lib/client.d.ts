@@ -1,6 +1,6 @@
 import type { ApplyMethod, ApplyResult, CodeValidation, GoAlongPerk, ReferralSnapshot } from "./models";
 import { type GoAlongStorage } from "./storage";
-export declare const SDK_VERSION = "react-native-0.1.0";
+export declare const SDK_VERSION = "react-native-0.2.0";
 export interface DeviceMeta {
     osVersion?: string;
     appVersion?: string;
@@ -13,8 +13,11 @@ export interface GoAlongConfig {
     appSlug?: string;
     /** 既定 https://goalong.me */
     baseUrl?: string;
-    /** 端末の保存先。既定は AsyncStorage */
-    storage?: GoAlongStorage;
+    /**
+     * 端末の保存先(getItem / setItem / removeItem)。AsyncStorage はそのまま渡せる:
+     * `import AsyncStorage from "@react-native-async-storage/async-storage"` → `storage: AsyncStorage`
+     */
+    storage: GoAlongStorage;
     /**
      * いま有効な購読があるか(RevenueCat の CustomerInfo などで判定)。
      * true を返すと紹介コードを送信せず existingSubscriber を返す(有効な購読があるユーザーは紹介の対象外)

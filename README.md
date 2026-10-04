@@ -10,12 +10,33 @@
 ## インストール
 
 ```sh
-npm install github:blue-office/goalong-react-native#0.1.0 @react-native-async-storage/async-storage
-cd ios && pod install
+npm install github:blue-office/goalong-react-native#0.2.0
 ```
 
-`@react-native-async-storage/async-storage` は、端末ごとのインストール ID を保存するために使います(必須)。Expo の場合は `npx expo install @react-native-async-storage/async-storage` で入れてください。
-独自の保存先を使う場合は、`configure` の `storage` に `getItem` / `setItem` / `removeItem` を持つオブジェクトを渡せます。
+GoAlong の SDK は TypeScript だけで書かれていて、ネイティブコードを含みません。CocoaPods や Swift Package Manager の設定は不要です。
+
+## インストール ID の保存先
+
+SDK は端末ごとのインストール ID などを保存します。保存先は `configure` の `storage` に渡します(`getItem` / `setItem` / `removeItem` を持つオブジェクト)。
+
+AsyncStorage はそのまま渡せます。
+
+```ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// storage: AsyncStorage
+```
+
+アプリですでに使っている保存先があれば、それを使えます(GoAlong のために追加するネイティブモジュールはありません)。
+
+```ts
+import { MMKV } from "react-native-mmkv";
+const mmkv = new MMKV();
+// storage: {
+//   getItem: async (k) => mmkv.getString(k) ?? null,
+//   setItem: async (k, v) => mmkv.set(k, v),
+//   removeItem: async (k) => mmkv.delete(k),
+// }
+```
 
 ## 1. 初期化する
 
@@ -24,9 +45,12 @@ cd ios && pod install
 ```ts
 import { GoAlong } from "@goalong/react-native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 GoAlong.configure({
   appId: "YOUR_APP_ID",  // GoAlong のアプリ詳細に表示される ID(Bundle ID ではありません)
   appSlug: "your-app",   // 紹介リンクの slug。指定を推奨
+  storage: AsyncStorage, // インストール ID などの保存先(上記)
   // いま有効な購読があるか(有効な購読があるユーザーは紹介の対象外)。
   // GoAlong の特典などで付与された無料期間(rc_promo_ で始まる)は購読に数えない
   isActiveSubscriber: async () => {
