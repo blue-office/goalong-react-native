@@ -10,9 +10,7 @@ export declare const KEYS: {
     readonly referralOfferingKey: "goalong.referral_offering_key";
     readonly rcAppUserId: "goalong.rc_app_user_id";
 };
-/** メモリだけに保存する(AsyncStorage が無い場合の代替。アプリを終了すると消える) */
+/** メモリだけに保存する(テスト用。アプリを終了すると消える) */
 export declare function memoryStorage(): GoAlongStorage;
-/** @react-native-async-storage/async-storage があればそれを使う */
-export declare function defaultStorage(): GoAlongStorage;
 /** UUID v4(小文字) */
 export declare function uuidv4(): string;

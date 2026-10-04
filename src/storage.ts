@@ -1,4 +1,5 @@
-// 端末に保存する値(キー名は iOS SDK と同じ)。既定は AsyncStorage。テスト・独自実装のため差し替え可能
+// 端末に保存する値(キー名は iOS SDK と同じ)。保存先はアプリが configure で渡す
+// (AsyncStorage・MMKV・expo-secure-store など。SDK はネイティブモジュールに依存しない)
 
 export interface GoAlongStorage {
   getItem(key: string): Promise<string | null>;
@@ -14,7 +15,7 @@ export const KEYS = {
   rcAppUserId: "goalong.rc_app_user_id",
 } as const;
 
-/** メモリだけに保存する(AsyncStorage が無い場合の代替。アプリを終了すると消える) */
+/** メモリだけに保存する(テスト用。アプリを終了すると消える) */
 export function memoryStorage(): GoAlongStorage {
   const map = new Map<string, string>();
   return {
@@ -28,22 +29,6 @@ export function memoryStorage(): GoAlongStorage {
       map.delete(k);
     },
   };
-}
-
-/** @react-native-async-storage/async-storage があればそれを使う */
-export function defaultStorage(): GoAlongStorage {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("@react-native-async-storage/async-storage");
-    const AsyncStorage = (mod?.default ?? mod) as GoAlongStorage;
-    if (AsyncStorage && typeof AsyncStorage.getItem === "function") return AsyncStorage;
-  } catch {
-    // 未導入
-  }
-  console.warn(
-    "[GoAlong] @react-native-async-storage/async-storage が見つからないため、メモリに保存します(アプリを終了するとインストール ID が変わります)。",
-  );
-  return memoryStorage();
 }
 
 /** UUID v4(小文字) */
